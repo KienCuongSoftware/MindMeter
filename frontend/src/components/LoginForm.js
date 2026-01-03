@@ -32,6 +32,14 @@ function LoginForm({ onLogin, onSwitchForm, onForgotPassword }) {
     document.title = t("loginTitle") + " | MindMeter";
   }, [t]);
 
+  // Clear error when user starts typing
+  useEffect(() => {
+    if (error) {
+      setError("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [email, password]);
+
   const validate = () => {
     const err = {};
     if (!email) err.email = t("validation.emailRequired");
@@ -55,17 +63,25 @@ function LoginForm({ onLogin, onSwitchForm, onForgotPassword }) {
     setLoading(true);
     try {
       const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8080";
-      const res = await authFetch(
-        `${API_URL}/api/auth/login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const res = await authFetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || t("loginFailed"));
+        let errorMessage = t("loginFailed");
+        try {
+          const data = await res.json();
+          // Parse error message from ErrorResponse format: { message, error, status, path }
+          errorMessage = data.message || data.error || errorMessage;
+        } catch (parseError) {
+          // If JSON parsing fails, use default error message
+          errorMessage =
+            res.status === 401
+              ? "Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại."
+              : t("loginFailed");
+        }
+        throw new Error(errorMessage);
       }
       const data = await res.json();
 
@@ -164,10 +180,10 @@ function LoginForm({ onLogin, onSwitchForm, onForgotPassword }) {
                   {t("login")}
                 </h2>
               </div>
-              {showError && errorMsg && (
+              {(error || (showError && errorMsg)) && (
                 <div className="mb-4 flex items-center gap-2 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-2 rounded-3xl shadow animate-shake">
                   <FaExclamationCircle className="text-xl mr-2 text-red-500 dark:text-red-300" />
-                  <div className="font-semibold">{errorMsg}</div>
+                  <div className="font-semibold">{error || errorMsg}</div>
                 </div>
               )}
               <div className="mb-5 relative">

@@ -54,12 +54,17 @@ export async function authFetch(url, options = {}) {
       "creatingAnonymousAccount"
     );
 
-    if (anonymousToken || creatingAnonymousAccount) {
-      // Đối với anonymous user, chỉ clear token thông thường, không redirect
+    // Kiểm tra xem có đang ở trang login không
+    const isLoginPage =
+      window.location.pathname === "/login" ||
+      window.location.pathname.includes("/login");
+
+    if (anonymousToken || creatingAnonymousAccount || isLoginPage) {
+      // Đối với anonymous user hoặc đang ở trang login, chỉ clear token thông thường, không redirect
       localStorage.removeItem("token");
       return res; // Return response để component có thể handle
     } else {
-      // Đối với regular user, clear data và redirect
+      // Đối với regular user ở các trang khác, clear data và redirect
       localStorage.removeItem("token");
       clearAnonymousData();
       window.location.href = "/login";

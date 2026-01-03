@@ -67,10 +67,23 @@ export default function LoginPage() {
         setError("Lỗi xử lý thông tin đăng nhập");
       }
     } catch (error) {
-      setError(
-        error.response?.data?.message ||
-          "Lỗi đăng nhập. Vui lòng kiểm tra email và mật khẩu."
-      );
+      // Parse error message from different response formats
+      let errorMessage = "Lỗi đăng nhập. Vui lòng kiểm tra email và mật khẩu.";
+
+      if (error.response?.data) {
+        // Handle ErrorResponse format: { message, error, status, path }
+        if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response.data.error) {
+          errorMessage = error.response.data.error;
+        } else if (typeof error.response.data === "string") {
+          errorMessage = error.response.data;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      setError(errorMessage);
     }
   };
 
