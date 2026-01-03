@@ -2665,18 +2665,18 @@ INSERT INTO depression_test_answers (test_result_id, question_id, answer_value, 
 (60, 135, 2, 'vi', 'depression_questions_vi'), (60, 136, 2, 'vi', 'depression_questions_vi'), (60, 137, 2, 'vi', 'depression_questions_vi'), (60, 138, 2, 'vi', 'depression_questions_vi'), (60, 139, 2, 'vi', 'depression_questions_vi'), (60, 140, 2, 'vi', 'depression_questions_vi'), (60, 141, 2, 'vi', 'depression_questions_vi'), (60, 142, 2, 'vi', 'depression_questions_vi'), (60, 143, 2, 'vi', 'depression_questions_vi'), (60, 144, 2, 'vi', 'depression_questions_vi');
 
 -- Advice Messages
--- Cuộc hội thoại giữa Expert 3 (Trần Kiên Cường) và Student 6 (Nguyễn Văn An)
+-- Cuộc hội thoại giữa Expert 3 Nguyễn Thị Dung) và Student 6 (Nguyễn Văn An)
 INSERT INTO advice_messages (sender_id, receiver_id, message, message_type, is_read, sent_at) VALUES
 -- Student 6 gửi tin nhắn đầu tiên cho Expert 3
-(6, 3, 'Chào thầy, em là An. Em đang cảm thấy rất lo lắng về kỳ thi sắp tới. Em không thể tập trung học được.', 'GENERAL', 1, DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(6, 3, 'Chào cô, em là An. Em đang cảm thấy rất lo lắng về kỳ thi sắp tới. Em không thể tập trung học được.', 'GENERAL', 1, DATE_SUB(NOW(), INTERVAL 2 DAY)),
 -- Expert 3 trả lời
-(3, 6, 'Chào An, thầy hiểu cảm giác của em. Lo lắng trước kỳ thi là điều bình thường. Em có thể chia sẻ thêm về những điều khiến em lo lắng nhất không?', 'ADVICE', 1, DATE_SUB(NOW(), INTERVAL 2 DAY) + INTERVAL 30 MINUTE),
+(3, 6, 'Chào An, cô hiểu cảm giác của em. Lo lắng trước kỳ thi là điều bình thường. Em có thể chia sẻ thêm về những điều khiến em lo lắng nhất không?', 'ADVICE', 1, DATE_SUB(NOW(), INTERVAL 2 DAY) + INTERVAL 30 MINUTE),
 -- Student 6 tiếp tục
 (6, 3, 'Em sợ sẽ không nhớ được bài và làm bài không tốt. Em đã học rất nhiều nhưng vẫn cảm thấy chưa đủ.', 'GENERAL', 1, DATE_SUB(NOW(), INTERVAL 2 DAY) + INTERVAL 1 HOUR),
 -- Expert 3 đưa lời khuyên
 (3, 6, 'An à, cảm giác "chưa đủ" là dấu hiệu của sự cầu toàn. Em đã học rất nhiều rồi, giờ cần nghỉ ngơi và tin tưởng vào bản thân. Thầy đề xuất em thử kỹ thuật thở sâu 4-7-8 để giảm lo âu.', 'ADVICE', 1, DATE_SUB(NOW(), INTERVAL 2 DAY) + INTERVAL 2 HOUR),
 -- Student 6 cảm ơn
-(6, 3, 'Cảm ơn thầy, em sẽ thử. Em cảm thấy nhẹ nhàng hơn rồi ạ.', 'GENERAL', 1, DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(6, 3, 'Cảm ơn cô, em sẽ thử. Em cảm thấy nhẹ nhàng hơn rồi ạ.', 'GENERAL', 1, DATE_SUB(NOW(), INTERVAL 1 DAY)),
 
 -- Cuộc hội thoại giữa Expert 3 và Student 7 (Hoàng Thị Linh)
 (7, 3, 'Chào thầy, em là Linh. Em đang gặp vấn đề với giấc ngủ, em không thể ngủ được vì suy nghĩ quá nhiều.', 'URGENT', 1, DATE_SUB(NOW(), INTERVAL 3 DAY)),

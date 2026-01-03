@@ -16,7 +16,7 @@ import {
   FaBookmark,
   FaComments,
 } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { BellIcon } from "@heroicons/react/24/outline";
 import { useEffect } from "react";
@@ -257,7 +257,38 @@ export default function DashboardHeader({
   const [showIntroMenu, setShowIntroMenu] = useState(false);
   const [showCommunityMenu, setShowCommunityMenu] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { t, i18n } = useTranslation();
+
+  // Helper function to check if a route is active
+  const isActiveRoute = (path) => {
+    if (path === "/home") {
+      return location.pathname === "/home" || location.pathname === "/";
+    }
+    return (
+      location.pathname === path || location.pathname.startsWith(path + "/")
+    );
+  };
+
+  // Check if any About submenu route is active
+  const isAboutActive = () => {
+    return (
+      isActiveRoute("/privacy-policy") ||
+      isActiveRoute("/terms-of-use") ||
+      isActiveRoute("/user-guide") ||
+      isActiveRoute("/disclaimer")
+    );
+  };
+
+  // Check if any Community submenu route is active
+  const isCommunityActive = () => {
+    return (
+      isActiveRoute("/forum") ||
+      isActiveRoute("/support-groups") ||
+      isActiveRoute("/success-stories") ||
+      isActiveRoute("/peer-matching")
+    );
+  };
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -509,7 +540,17 @@ export default function DashboardHeader({
             {/* Menu items */}
             <nav className="p-2">
               <button
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                  isActiveRoute("/home") ||
+                  (user?.role === "ADMIN" &&
+                    isActiveRoute("/admin/dashboard")) ||
+                  (user?.role === "EXPERT" &&
+                    isActiveRoute("/expert/dashboard")) ||
+                  (user?.role === "STUDENT" &&
+                    isActiveRoute("/student/dashboard"))
+                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
                 onClick={() => {
                   if (user?.role === "ADMIN") {
                     navigate("/admin/dashboard");
@@ -540,7 +581,11 @@ export default function DashboardHeader({
               </button>
               <div className="relative">
                 <button
-                  className="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                    isAboutActive()
+                      ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
                   onClick={() => setShowIntroMenu((v) => !v)}
                 >
                   <div className="flex items-center gap-3">
@@ -568,7 +613,11 @@ export default function DashboardHeader({
                 {showIntroMenu && (
                   <div className="ml-8 mt-1 space-y-1">
                     <button
-                      className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                        isActiveRoute("/privacy-policy")
+                          ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
                       onClick={() => {
                         navigate("/privacy-policy");
                         setShowIntroMenu(false);
@@ -578,7 +627,11 @@ export default function DashboardHeader({
                       {t("navPrivacyPolicy")}
                     </button>
                     <button
-                      className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                        isActiveRoute("/terms-of-use")
+                          ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
                       onClick={() => {
                         navigate("/terms-of-use");
                         setShowIntroMenu(false);
@@ -588,7 +641,11 @@ export default function DashboardHeader({
                       {t("navTermsOfUse")}
                     </button>
                     <button
-                      className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                        isActiveRoute("/user-guide")
+                          ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
                       onClick={() => {
                         navigate("/user-guide");
                         setShowIntroMenu(false);
@@ -598,7 +655,11 @@ export default function DashboardHeader({
                       {t("navUserGuide")}
                     </button>
                     <button
-                      className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                        isActiveRoute("/disclaimer")
+                          ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
                       onClick={() => {
                         navigate("/disclaimer");
                         setShowIntroMenu(false);
@@ -614,7 +675,11 @@ export default function DashboardHeader({
               {(!user || user.role === "STUDENT" || isAnonymousUser(user)) && (
                 <div className="relative">
                   <button
-                    className="w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                    className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                      isCommunityActive()
+                        ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}
                     onClick={() => setShowCommunityMenu(!showCommunityMenu)}
                   >
                     <div className="flex items-center gap-3">
@@ -642,7 +707,11 @@ export default function DashboardHeader({
                   {showCommunityMenu && (
                     <div className="ml-8 mt-1 space-y-1">
                       <button
-                        className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                        className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                          isActiveRoute("/forum")
+                            ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        }`}
                         onClick={() => {
                           navigate("/forum");
                           setShowCommunityMenu(false);
@@ -652,7 +721,11 @@ export default function DashboardHeader({
                         {t("navForum")}
                       </button>
                       <button
-                        className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                        className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                          isActiveRoute("/support-groups")
+                            ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        }`}
                         onClick={() => {
                           navigate("/support-groups");
                           setShowCommunityMenu(false);
@@ -662,7 +735,11 @@ export default function DashboardHeader({
                         {t("navSupportGroups")}
                       </button>
                       <button
-                        className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                        className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                          isActiveRoute("/success-stories")
+                            ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        }`}
                         onClick={() => {
                           navigate("/success-stories");
                           setShowCommunityMenu(false);
@@ -672,7 +749,11 @@ export default function DashboardHeader({
                         {t("navSuccessStories")}
                       </button>
                       <button
-                        className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                        className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                          isActiveRoute("/peer-matching")
+                            ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        }`}
                         onClick={() => {
                           navigate("/peer-matching");
                           setShowCommunityMenu(false);
@@ -688,7 +769,12 @@ export default function DashboardHeader({
               {/* Danh sách bài test - chỉ hiển thị cho STUDENT và ANONYMOUS */}
               {(!user || user.role === "STUDENT" || isAnonymousUser(user)) && (
                 <button
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                    location.pathname === "/home" &&
+                    location.hash === "#test-section"
+                      ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
                   onClick={() => {
                     function smoothScrollTo(element) {
                       if (!element) return;
@@ -754,7 +840,11 @@ export default function DashboardHeader({
               {/* Blog link - chỉ hiển thị cho STUDENT (không phải anonymous) */}
               {user && user.role === "STUDENT" && !user.anonymous && (
                 <button
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                    isActiveRoute("/blog")
+                      ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
                   onClick={() => {
                     navigate("/blog");
                     setShowMobileMenu(false);
@@ -777,7 +867,11 @@ export default function DashboardHeader({
                 </button>
               )}
               <button
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                  isActiveRoute("/contact")
+                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
                 onClick={() => {
                   navigate("/contact");
                   setShowMobileMenu(false);
@@ -876,7 +970,16 @@ export default function DashboardHeader({
         >
           <nav className="flex gap-4 xl:gap-6 2xl:gap-8 items-center text-sm xl:text-base font-semibold whitespace-nowrap">
             <span
-              className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-gray-700 dark:text-gray-200 transition-colors whitespace-nowrap"
+              className={`cursor-pointer text-gray-700 dark:text-gray-200 transition-colors whitespace-nowrap relative pb-1 ${
+                isActiveRoute("/home") ||
+                (user?.role === "ADMIN" && isActiveRoute("/admin/dashboard")) ||
+                (user?.role === "EXPERT" &&
+                  isActiveRoute("/expert/dashboard")) ||
+                (user?.role === "STUDENT" &&
+                  isActiveRoute("/student/dashboard"))
+                  ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                  : "hover:text-blue-600 dark:hover:text-blue-400 border-b-2 border-transparent"
+              }`}
               onClick={() => {
                 // Điều hướng về trang phù hợp theo role
                 if (user?.role === "ADMIN") {
@@ -899,8 +1002,10 @@ export default function DashboardHeader({
             >
               <span
                 className={
-                  "cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1 text-gray-700 dark:text-gray-200 transition-colors whitespace-nowrap " +
-                  (showIntroMenu ? "text-blue-600 dark:text-blue-400" : "")
+                  "cursor-pointer flex items-center gap-1 text-gray-700 dark:text-gray-200 transition-colors whitespace-nowrap relative pb-1 " +
+                  (isAboutActive()
+                    ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                    : "hover:text-blue-600 dark:hover:text-blue-400 border-b-2 border-transparent")
                 }
               >
                 {t("navAbout")}{" "}
@@ -920,7 +1025,11 @@ export default function DashboardHeader({
                     onMouseLeave={() => setShowIntroMenu(false)}
                   >
                     <div
-                      className="px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-200 transition-colors"
+                      className={`px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${
+                        isActiveRoute("/privacy-policy")
+                          ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                          : "text-gray-700 dark:text-gray-200"
+                      }`}
                       onClick={() => {
                         navigate("/privacy-policy");
                         setShowIntroMenu(false);
@@ -929,7 +1038,11 @@ export default function DashboardHeader({
                       {t("navPrivacyPolicy")}
                     </div>
                     <div
-                      className="px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-200 transition-colors"
+                      className={`px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${
+                        isActiveRoute("/terms-of-use")
+                          ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                          : "text-gray-700 dark:text-gray-200"
+                      }`}
                       onClick={() => {
                         navigate("/terms-of-use");
                         setShowIntroMenu(false);
@@ -938,7 +1051,11 @@ export default function DashboardHeader({
                       {t("navTermsOfUse")}
                     </div>
                     <div
-                      className="px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-200 transition-colors"
+                      className={`px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${
+                        isActiveRoute("/user-guide")
+                          ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                          : "text-gray-700 dark:text-gray-200"
+                      }`}
                       onClick={() => {
                         navigate("/user-guide");
                         setShowIntroMenu(false);
@@ -947,7 +1064,11 @@ export default function DashboardHeader({
                       {t("navUserGuide")}
                     </div>
                     <div
-                      className="px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-200 transition-colors"
+                      className={`px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${
+                        isActiveRoute("/disclaimer")
+                          ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                          : "text-gray-700 dark:text-gray-200"
+                      }`}
                       onClick={() => {
                         navigate("/disclaimer");
                         setShowIntroMenu(false);
@@ -962,7 +1083,12 @@ export default function DashboardHeader({
             {/* Chỉ hiển thị "Danh sách bài khảo sát" cho STUDENT và ANONYMOUS */}
             {(!user || user.role === "STUDENT" || isAnonymousUser(user)) && (
               <span
-                className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-gray-700 dark:text-gray-200 transition-colors whitespace-nowrap"
+                className={`cursor-pointer text-gray-700 dark:text-gray-200 transition-colors whitespace-nowrap relative pb-1 ${
+                  location.pathname === "/home" &&
+                  location.hash === "#test-section"
+                    ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                    : "hover:text-blue-600 dark:hover:text-blue-400 border-b-2 border-transparent"
+                }`}
                 onClick={() => {
                   function smoothScrollTo(element) {
                     if (!element) return;
@@ -1008,7 +1134,11 @@ export default function DashboardHeader({
             {/* Blog link - chỉ hiển thị cho STUDENT (không phải anonymous) */}
             {user && user.role === "STUDENT" && !user.anonymous && (
               <span
-                className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-gray-700 dark:text-gray-200 transition-colors whitespace-nowrap"
+                className={`cursor-pointer text-gray-700 dark:text-gray-200 transition-colors whitespace-nowrap relative pb-1 ${
+                  isActiveRoute("/blog")
+                    ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                    : "hover:text-blue-600 dark:hover:text-blue-400 border-b-2 border-transparent"
+                }`}
                 onClick={() => navigate("/blog")}
               >
                 {t("navBlog")}
@@ -1023,10 +1153,10 @@ export default function DashboardHeader({
               >
                 <span
                   className={
-                    "cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1 text-gray-700 dark:text-gray-200 transition-colors whitespace-nowrap " +
-                    (showCommunityMenu
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "")
+                    "cursor-pointer flex items-center gap-1 text-gray-700 dark:text-gray-200 transition-colors whitespace-nowrap relative pb-1 " +
+                    (isCommunityActive()
+                      ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                      : "hover:text-blue-600 dark:hover:text-blue-400 border-b-2 border-transparent")
                   }
                 >
                   {t("navCommunity")}{" "}
@@ -1046,7 +1176,11 @@ export default function DashboardHeader({
                       onMouseLeave={() => setShowCommunityMenu(false)}
                     >
                       <div
-                        className="px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-200 transition-colors"
+                        className={`px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${
+                          isActiveRoute("/forum")
+                            ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                            : "text-gray-700 dark:text-gray-200"
+                        }`}
                         onClick={() => {
                           navigate("/forum");
                           setShowCommunityMenu(false);
@@ -1055,7 +1189,11 @@ export default function DashboardHeader({
                         {t("navForum")}
                       </div>
                       <div
-                        className="px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-200 transition-colors"
+                        className={`px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${
+                          isActiveRoute("/support-groups")
+                            ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                            : "text-gray-700 dark:text-gray-200"
+                        }`}
                         onClick={() => {
                           navigate("/support-groups");
                           setShowCommunityMenu(false);
@@ -1064,7 +1202,11 @@ export default function DashboardHeader({
                         {t("navSupportGroups")}
                       </div>
                       <div
-                        className="px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-200 transition-colors"
+                        className={`px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${
+                          isActiveRoute("/success-stories")
+                            ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                            : "text-gray-700 dark:text-gray-200"
+                        }`}
                         onClick={() => {
                           navigate("/success-stories");
                           setShowCommunityMenu(false);
@@ -1073,7 +1215,11 @@ export default function DashboardHeader({
                         {t("navSuccessStories")}
                       </div>
                       <div
-                        className="px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer text-gray-700 dark:text-gray-200 transition-colors"
+                        className={`px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${
+                          isActiveRoute("/peer-matching")
+                            ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                            : "text-gray-700 dark:text-gray-200"
+                        }`}
                         onClick={() => {
                           navigate("/peer-matching");
                           setShowCommunityMenu(false);
@@ -1087,7 +1233,11 @@ export default function DashboardHeader({
               </div>
             )}
             <span
-              className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-gray-700 dark:text-gray-200 transition-colors whitespace-nowrap"
+              className={`cursor-pointer text-gray-700 dark:text-gray-200 transition-colors whitespace-nowrap relative pb-1 ${
+                isActiveRoute("/contact")
+                  ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                  : "hover:text-blue-600 dark:hover:text-blue-400 border-b-2 border-transparent"
+              }`}
               onClick={() => navigate("/contact")}
             >
               {t("navContact")}
