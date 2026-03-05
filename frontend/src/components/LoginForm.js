@@ -64,14 +64,14 @@ function LoginForm({ onLogin, onSwitchForm, onForgotPassword }) {
     try {
       const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8080";
       const res = await authFetch(`${API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
       });
       if (!res.ok) {
         let errorMessage = t("loginFailed");
         try {
-          const data = await res.json();
+        const data = await res.json();
           // Parse error message from ErrorResponse format: { message, error, status, path }
           errorMessage = data.message || data.error || errorMessage;
         } catch (parseError) {

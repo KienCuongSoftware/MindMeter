@@ -134,7 +134,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
   const [expertSuggestionShown, setExpertSuggestionShown] = useState(false);
   const fetchAttempted = useRef(false); // Tránh gọi API nhiều lần
   const [conversationId] = useState(() =>
-    AppointmentHistoryService.generateConversationId()
+    AppointmentHistoryService.generateConversationId(),
   );
   const [, setChatContext] = useState({
     conversationId: null,
@@ -175,7 +175,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
     try {
       setExpertsFetched(true);
       const response = await authFetch(
-        "/api/expert-schedules/available-experts"
+        "/api/expert-schedules/available-experts",
       );
       if (response && response.ok) {
         const experts = await response.json();
@@ -230,7 +230,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
     // Nếu user chat quá 5 tin nhắn mà chưa được gợi ý đặt lịch
     const userMessages = messages.filter((msg) => msg.sender === "user");
     const hasAppointmentSuggestion = messages.some(
-      (msg) => msg.showAppointmentButton
+      (msg) => msg.showAppointmentButton,
     );
 
     // Kiểm tra xem user có ý định đặt lịch không
@@ -238,8 +238,8 @@ const ChatBotModal = ({ open, onClose, user }) => {
       (msg) =>
         msg.sender === "user" &&
         appointmentKeywords.some((keyword) =>
-          msg.text.toLowerCase().includes(keyword)
-        )
+          msg.text.toLowerCase().includes(keyword),
+        ),
     );
 
     // CHỈ gợi ý khi thực sự cần thiết và chưa có gợi ý nào
@@ -344,7 +344,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
                     day,
                     hour,
                     minute,
-                    second || 0
+                    second || 0,
                   );
                 }
               } catch (parseError) {
@@ -472,7 +472,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
 
         // Tạo tin nhắn lỗi với thông tin chi tiết
         const errorText = `${t(
-          "appointment.autoBookingError"
+          "appointment.autoBookingError",
         )}: ${errorMessage}\n\n${t("appointment.autoBookingErrorDesc")}`;
 
         setMessages((prev) => [
@@ -503,7 +503,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
       }
 
       const errorText = `${t(
-        "appointment.autoBookingError"
+        "appointment.autoBookingError",
       )}: ${errorMessage}\n\n${t("appointment.autoBookingErrorDesc")}`;
 
       setMessages((prev) => [
@@ -546,7 +546,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
           (m) =>
             `${m.sender === "user" ? t("chatbot.you") : t("chatbot.bot")}: ${
               m.text
-            }`
+            }`,
         )
         .join("\n");
     }
@@ -816,7 +816,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
     const usageKey = getChatbotUsageKey(user);
     localStorage.setItem(
       usageKey,
-      JSON.stringify({ date: getTodayKey(), count })
+      JSON.stringify({ date: getTodayKey(), count }),
     );
   }
 
@@ -974,7 +974,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
 
     // Phân tích intent của user
     const intentAnalysis = AppointmentHistoryService.analyzeUserIntent(
-      input.trim()
+      input.trim(),
     );
 
     // Cập nhật chat context
@@ -1012,7 +1012,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
 
       // Kiểm tra xem có phải yêu cầu đặt lịch tự động không
       const autoBookingMatch = data.reply.match(
-        /AUTO_BOOK:(.+?)\|(.+?)\|(.+?)\|(\d+)/
+        /AUTO_BOOK:(.+?)\|(.+?)\|(.+?)\|(\d+)/,
       );
 
       if (autoBookingMatch) {
@@ -1025,7 +1025,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
       const hasAppointmentIntent =
         checkIfUserHasEnoughInfo(input) ||
         appointmentKeywords.some((keyword) =>
-          input.toLowerCase().includes(keyword)
+          input.toLowerCase().includes(keyword),
         );
 
       if (hasAppointmentIntent) {
@@ -1033,16 +1033,16 @@ const ChatBotModal = ({ open, onClose, user }) => {
         if (checkIfUserHasEnoughInfo(input)) {
           // Tạo format AUTO_BOOK giả để sử dụng hàm handleAutoBooking
           const expertMatch = input.match(
-            /(?:với|với chuyên gia|chuyên gia)\s+([^,\s]+(?:\s+[^,\s]+)*)/i
+            /(?:với|với chuyên gia|chuyên gia)\s+([^,\s]+(?:\s+[^,\s]+)*)/i,
           );
           const dateMatch = input.match(
-            /(?:vào|ngày|lúc)\s+([^,\s]+(?:\s+[^,\s]+)*)/i
+            /(?:vào|ngày|lúc)\s+([^,\s]+(?:\s+[^,\s]+)*)/i,
           );
           const timeMatch = input.match(
-            /(?:giờ|thời gian|lúc)\s*(\d{1,2})(?::(\d{2}))?h?/i
+            /(?:giờ|thời gian|lúc)\s*(\d{1,2})(?::(\d{2}))?h?/i,
           );
           const durationMatch = input.match(
-            /(?:thời lượng|khoảng|khoảng)\s*(\d+)\s*(?:phút|phút)/i
+            /(?:thời lượng|khoảng|khoảng)\s*(\d+)\s*(?:phút|phút)/i,
           );
 
           if (expertMatch && dateMatch && timeMatch) {
@@ -1129,7 +1129,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
         ];
 
         const hasUrgentIssue = urgentKeywords.some((keyword) =>
-          userMessage.includes(keyword)
+          userMessage.includes(keyword),
         );
 
         if (hasUrgentIssue) {
@@ -1138,8 +1138,8 @@ const ChatBotModal = ({ open, onClose, user }) => {
             (msg) =>
               msg.sender === "user" &&
               appointmentKeywords.some((keyword) =>
-                msg.text.toLowerCase().includes(keyword)
-              )
+                msg.text.toLowerCase().includes(keyword),
+              ),
           );
 
           if (!hasAppointmentIntent) {
@@ -1160,7 +1160,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
         // Chỉ gợi ý khi user đã chat ít nhất 5 tin nhắn và chưa có ý định đặt lịch
         const userMessages = messages.filter((msg) => msg.sender === "user");
         const hasAppointmentIntent = appointmentKeywords.some((keyword) =>
-          input.toLowerCase().includes(keyword)
+          input.toLowerCase().includes(keyword),
         );
 
         if (userMessages.length >= 5 && !hasAppointmentIntent) {
@@ -1361,12 +1361,12 @@ const ChatBotModal = ({ open, onClose, user }) => {
                                 "ONLINE"
                                   ? t("appointment.online")
                                   : msg.appointmentDetails.consultationType ===
-                                    "OFFLINE"
-                                  ? t("appointment.offline")
-                                  : msg.appointmentDetails.consultationType ===
-                                    "PHONE"
-                                  ? t("appointment.phone")
-                                  : msg.appointmentDetails.consultationType}
+                                      "OFFLINE"
+                                    ? t("appointment.offline")
+                                    : msg.appointmentDetails
+                                          .consultationType === "PHONE"
+                                      ? t("appointment.phone")
+                                      : msg.appointmentDetails.consultationType}
                               </div>
                             </div>
                           </div>
@@ -1393,15 +1393,15 @@ const ChatBotModal = ({ open, onClose, user }) => {
                                 {msg.appointmentDetails.status === "PENDING"
                                   ? t("appointment.statusPending")
                                   : msg.appointmentDetails.status ===
-                                    "CONFIRMED"
-                                  ? t("appointment.statusConfirmed")
-                                  : msg.appointmentDetails.status ===
-                                    "CANCELLED"
-                                  ? t("appointment.statusCancelled")
-                                  : msg.appointmentDetails.status ===
-                                    "COMPLETED"
-                                  ? t("appointment.statusCompleted")
-                                  : msg.appointmentDetails.status}
+                                      "CONFIRMED"
+                                    ? t("appointment.statusConfirmed")
+                                    : msg.appointmentDetails.status ===
+                                        "CANCELLED"
+                                      ? t("appointment.statusCancelled")
+                                      : msg.appointmentDetails.status ===
+                                          "COMPLETED"
+                                        ? t("appointment.statusCompleted")
+                                        : msg.appointmentDetails.status}
                               </span>
                             </div>
                           </div>
@@ -1469,7 +1469,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
                                             expert.id,
                                             expert.firstName +
                                               " " +
-                                              expert.lastName
+                                              expert.lastName,
                                           )
                                         }
                                         className={`w-full text-left p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-lg hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/40 dark:hover:to-indigo-900/40 transition-all duration-200 text-sm shadow-sm hover:shadow-md ${
@@ -1502,7 +1502,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
                                           {t("availableNow")}
                                         </div>
                                       </button>
-                                    )
+                                    ),
                                   );
                                 })()
                               : // Hiển thị chuyên gia đơn giản cho tin nhắn cũ
@@ -1512,7 +1512,9 @@ const ChatBotModal = ({ open, onClose, user }) => {
                                     onClick={() =>
                                       handleAppointmentSuggestion(
                                         expert.id,
-                                        expert.firstName + " " + expert.lastName
+                                        expert.firstName +
+                                          " " +
+                                          expert.lastName,
                                       )
                                     }
                                     className="w-full text-left p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-sm"
@@ -1615,7 +1617,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
                     </div>
                   </div>
                 </div>
-              )
+              ),
           )}
           <div ref={messagesEndRef} />
         </div>
@@ -1836,7 +1838,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
                       ))}
                     </ul>
                   </div>
-                )
+                ),
               )}
 
               <div className="text-center pt-3 border-t border-gray-200 dark:border-gray-700">
@@ -1910,7 +1912,7 @@ const ChatBotModal = ({ open, onClose, user }) => {
                   onClick={() => {
                     handleAppointmentSuggestion(
                       expert.id,
-                      expert.firstName + " " + expert.lastName
+                      expert.firstName + " " + expert.lastName,
                     );
                     setShowAllExperts(false);
                   }}
