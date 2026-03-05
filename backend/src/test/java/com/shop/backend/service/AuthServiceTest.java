@@ -45,6 +45,9 @@ class AuthServiceTest {
     @Mock
     private OtpService otpService;
 
+    @Mock
+    private PasswordValidationService passwordValidationService;
+
     @InjectMocks
     private AuthService authService;
 
@@ -92,6 +95,7 @@ class AuthServiceTest {
         // Given
         when(authenticationManager.authenticate(any())).thenReturn(null); // Mock successful authentication
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+        when(passwordValidationService.isTemporaryPassword(testUser)).thenReturn(false);
         when(jwtService.generateTokenWithUserInfo(testUser)).thenReturn("mock-jwt-token");
 
         // When
@@ -134,10 +138,14 @@ class AuthServiceTest {
 
     @Test
     void register_WithValidData_ShouldCreateUser() {
-        // Given
-        when(userRepository.existsByEmail("newuser@example.com")).thenReturn(false);
+        // Given - register uses findByEmail, not existsByEmail
+        when(userRepository.findByEmail("newuser@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
-        when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            u.setId(1L);
+            return u;
+        });
         when(jwtService.generateToken(any(), any())).thenReturn("mock-jwt-token");
 
         // When
@@ -148,7 +156,7 @@ class AuthServiceTest {
         assertEquals("mock-jwt-token", result.getToken());
         assertEquals("newuser@example.com", result.getEmail());
         assertEquals(Role.STUDENT, result.getRole());
-        verify(userRepository).existsByEmail("newuser@example.com");
+        verify(userRepository).findByEmail("newuser@example.com");
         verify(passwordEncoder).encode("password123");
         verify(userRepository).save(any(User.class));
         verify(jwtService).generateToken(any(), any());
@@ -156,12 +164,12 @@ class AuthServiceTest {
 
     @Test
     void register_WithExistingEmail_ShouldThrowException() {
-        // Given
-        when(userRepository.existsByEmail("newuser@example.com")).thenReturn(true);
+        // Given - register uses findByEmail
+        when(userRepository.findByEmail("newuser@example.com")).thenReturn(Optional.of(testUser));
 
         // When & Then
         assertThrows(RuntimeException.class, () -> authService.register(registerRequest));
-        verify(userRepository).existsByEmail("newuser@example.com");
+        verify(userRepository).findByEmail("newuser@example.com");
         verifyNoInteractions(passwordEncoder);
         verify(userRepository, never()).save(any(User.class));
     }
@@ -171,19 +179,22 @@ class AuthServiceTest {
         // Given
         registerRequest.setEmail(null);
 
-        // When & Then
-        // AuthService không validate null email, nó sẽ gọi existsByEmail(null) và có thể throw exception
+        // When & Then - trim/toLowerCase on null may throw or findByEmail(null) may throw
         assertThrows(Exception.class, () -> authService.register(registerRequest));
-        verify(userRepository).existsByEmail(null);
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     void register_WithEmptyPassword_ShouldCreateUser() {
         // Given
         registerRequest.setPassword("");
-        when(userRepository.existsByEmail("newuser@example.com")).thenReturn(false);
+        when(userRepository.findByEmail("newuser@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("")).thenReturn("encodedEmptyPassword");
-        when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            u.setId(1L);
+            return u;
+        });
         when(jwtService.generateToken(any(), any())).thenReturn("mock-jwt-token");
 
         // When
@@ -194,7 +205,7 @@ class AuthServiceTest {
         assertEquals("mock-jwt-token", result.getToken());
         assertEquals("newuser@example.com", result.getEmail());
         assertEquals(Role.STUDENT, result.getRole());
-        verify(userRepository).existsByEmail("newuser@example.com");
+        verify(userRepository).findByEmail("newuser@example.com");
         verify(passwordEncoder).encode("");
         verify(userRepository).save(any(User.class));
         verify(jwtService).generateToken(any(), any());

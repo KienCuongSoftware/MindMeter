@@ -345,7 +345,9 @@ export default function AdminDashboardPage() {
               decoded.avatarUrl = newAvatarUrl;
               // Lưu token mới vào localStorage
               localStorage.setItem("token", token);
-            } catch (error) {}
+            } catch (error) {
+              console.error("AdminDashboard: update avatar in token failed", error);
+            }
           }
 
           // Tăng avatarUpdateKey để force re-render

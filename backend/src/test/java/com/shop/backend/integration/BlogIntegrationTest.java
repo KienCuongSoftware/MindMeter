@@ -81,9 +81,10 @@ class BlogIntegrationTest {
         adminUser = userRepository.save(adminUser);
         adminToken = jwtService.generateTokenWithUserInfo(adminUser);
 
-        // Create test category
+        // Create test category (slug required, not null)
         testCategory = new BlogCategory();
         testCategory.setName("Test Category");
+        testCategory.setSlug("test-category");
         testCategory.setDescription("Test Description");
         testCategory = blogCategoryRepository.save(testCategory);
     }

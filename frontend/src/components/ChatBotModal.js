@@ -844,7 +844,9 @@ const ChatBotModal = ({ open, onClose, user }) => {
         // Migrate lịch sử cũ sang key mới
         localStorage.setItem(chatHistoryKey, oldHistory);
         localStorage.removeItem(oldHistoryKey);
-      } catch (error) {}
+      } catch (error) {
+        console.error("ChatBotModal: migrate chat history failed", error);
+      }
     }
   }, [user]);
 

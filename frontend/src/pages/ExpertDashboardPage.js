@@ -178,7 +178,9 @@ export default function ExpertDashboardPage({
               decoded.avatarUrl = newAvatarUrl;
               // Lưu token mới vào localStorage
               localStorage.setItem("token", token);
-            } catch (error) {}
+            } catch (error) {
+              console.error("ExpertDashboard: update avatar in token failed", error);
+            }
           }
         }}
       />
