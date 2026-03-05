@@ -145,8 +145,8 @@ public class IpFilteringService {
         stats.put("whitelistedCount", whitelistedIps.size());
         stats.put("suspiciousCount", suspiciousIps.size());
         stats.put("torExitNodesCount", torExitNodes.size());
-        stats.put("allowedCountries", Arrays.asList(allowedCountries.split(",")));
-        stats.put("blockedCountries", Arrays.asList(blockedCountries.split(",")));
+        stats.put("allowedCountries", allowedCountries != null ? Arrays.asList(allowedCountries.split(",")) : List.of());
+        stats.put("blockedCountries", blockedCountries != null ? Arrays.asList(blockedCountries.split(",")) : List.of());
         return stats;
     }
 
@@ -234,19 +234,22 @@ public class IpFilteringService {
      */
     private boolean isGeographicallyBlocked(String ip) {
         try {
+            if (blockedCountries == null && allowedCountries == null) {
+                return false;
+            }
             String country = getCountryFromIp(ip);
             if (country == null) {
                 return false; // Allow if country unknown
             }
 
             // Check blocked countries
-            if (Arrays.asList(blockedCountries.split(",")).contains(country)) {
+            if (blockedCountries != null && Arrays.asList(blockedCountries.split(",")).contains(country)) {
                 return true;
             }
 
             // Check if country is in allowed list (if specified)
-            if (!allowedCountries.isEmpty() && 
-                !Arrays.asList(allowedCountries.split(",")).contains(country)) {
+            if (allowedCountries != null && !allowedCountries.isEmpty()
+                && !Arrays.asList(allowedCountries.split(",")).contains(country)) {
                 return true;
             }
 

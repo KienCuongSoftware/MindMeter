@@ -1,7 +1,7 @@
 package com.shop.backend.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
@@ -16,12 +16,8 @@ import static org.junit.jupiter.api.Assertions.*;
 })
 class IpFilteringServiceTest {
 
+    @Autowired
     private IpFilteringService ipFilteringService;
-
-    @BeforeEach
-    void setUp() {
-        ipFilteringService = new IpFilteringService();
-    }
 
     @Test
     void testValidIpNotBlocked() {
@@ -32,8 +28,8 @@ class IpFilteringServiceTest {
 
     @Test
     void testBlacklistedIpBlocked() {
-        // Add IP to blacklist
-        String maliciousIp = "10.0.0.1";
+        // Use a non-local IP so blacklist is actually checked (10.x is treated as local and allowed)
+        String maliciousIp = "203.0.113.50";
         ipFilteringService.addToBlacklist(maliciousIp);
         
         // Should be blocked
@@ -52,8 +48,8 @@ class IpFilteringServiceTest {
 
     @Test
     void testSuspiciousIpBlocked() {
-        // Test suspicious IP patterns
-        String suspiciousIp = "127.0.0.1";
+        // 127.0.0.1 is allowed as local; use IP matching suspicious pattern 0.x (not in isLocalIp list)
+        String suspiciousIp = "0.0.0.1";
         assertTrue(ipFilteringService.isIpBlocked(suspiciousIp));
     }
 
@@ -78,7 +74,8 @@ class IpFilteringServiceTest {
 
     @Test
     void testMarkSuspicious() {
-        String ip = "192.168.1.100";
+        // Use non-local IP so suspicious check is reached (192.168.x is local and allowed first)
+        String ip = "203.0.113.100";
         
         // Initially not blocked
         assertFalse(ipFilteringService.isIpBlocked(ip));
@@ -92,7 +89,8 @@ class IpFilteringServiceTest {
 
     @Test
     void testRemoveFromBlacklist() {
-        String ip = "10.0.0.2";
+        // Use non-local IP so blacklist check is reached
+        String ip = "203.0.113.51";
         
         // Add to blacklist
         ipFilteringService.addToBlacklist(ip);
@@ -122,9 +120,9 @@ class IpFilteringServiceTest {
     @Test
     void testClearAllLists() {
         // Add some test data
-        ipFilteringService.addToBlacklist("10.0.0.1");
-        ipFilteringService.addToWhitelist("203.0.113.1");
-        ipFilteringService.markSuspicious("192.168.1.1");
+        ipFilteringService.addToBlacklist("203.0.113.1");
+        ipFilteringService.addToWhitelist("203.0.113.2");
+        ipFilteringService.markSuspicious("203.0.113.3");
         
         // Clear all
         ipFilteringService.clearAllLists();

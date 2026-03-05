@@ -64,7 +64,7 @@ class CurrencyServiceTest {
         double rate = currencyService.getUsdToVndRate();
 
         // Then
-        assertEquals(24000.0, rate, 0.01); // Default fallback rate
+        assertEquals(27469.67, rate, 0.01); // Fallback rate
         verify(restTemplate).getForEntity(anyString(), eq(Map.class));
     }
 
@@ -78,7 +78,7 @@ class CurrencyServiceTest {
         double rate = currencyService.getUsdToVndRate();
 
         // Then
-        assertEquals(24000.0, rate, 0.01); // Default fallback rate
+        assertEquals(27469.67, rate, 0.01); // Fallback rate from CurrencyService.FALLBACK_USD_VND_RATE
         verify(restTemplate).getForEntity(anyString(), eq(Map.class));
     }
 
@@ -95,7 +95,7 @@ class CurrencyServiceTest {
         double rate = currencyService.getUsdToVndRate();
 
         // Then
-        assertEquals(24000.0, rate, 0.01); // Default fallback rate
+        assertEquals(27469.67, rate, 0.01); // Fallback rate
         verify(restTemplate).getForEntity(anyString(), eq(Map.class));
     }
 
@@ -115,7 +115,7 @@ class CurrencyServiceTest {
         double rate = currencyService.getUsdToVndRate();
 
         // Then
-        assertEquals(24000.0, rate, 0.01); // Default fallback rate
+        assertEquals(27469.67, rate, 0.01); // Fallback rate
         verify(restTemplate).getForEntity(anyString(), eq(Map.class));
     }
 
@@ -129,7 +129,7 @@ class CurrencyServiceTest {
         double rate = currencyService.getUsdToVndRate();
 
         // Then
-        assertEquals(24000.0, rate, 0.01); // Default fallback rate
+        assertEquals(27469.67, rate, 0.01); // Fallback rate
         verify(restTemplate).getForEntity(anyString(), eq(Map.class));
     }
 
@@ -189,7 +189,7 @@ class CurrencyServiceTest {
         double rate = currencyService.getUsdToVndRate();
 
         // Then
-        assertEquals(24000.0, rate, 0.01); // Default fallback rate
+        assertEquals(27469.67, rate, 0.01); // Fallback rate
         verify(restTemplate).getForEntity(anyString(), eq(Map.class));
     }
 

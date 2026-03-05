@@ -18,10 +18,16 @@ public class OtpService {
     private final Map<String, OtpInfo> otpStore = new ConcurrentHashMap<>();
 
     public void saveOtp(String email, String otp, int minutes) {
+        if (email == null) {
+            return;
+        }
         otpStore.put(email, new OtpInfo(otp, LocalDateTime.now().plusMinutes(minutes)));
     }
 
     public boolean verifyOtp(String email, String otp) {
+        if (email == null) {
+            return false;
+        }
         OtpInfo info = otpStore.get(email);
         if (info == null) return false;
         if (info.expiresAt.isBefore(LocalDateTime.now())) {

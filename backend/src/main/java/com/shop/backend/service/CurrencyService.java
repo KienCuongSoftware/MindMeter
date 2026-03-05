@@ -11,13 +11,19 @@ import java.util.logging.Logger;
 
 @Service
 public class CurrencyService {
-    
+
+    private static final double FALLBACK_USD_VND_RATE = 27469.67;
+
     private static final Logger logger = Logger.getLogger(CurrencyService.class.getName());
-    
+
     @Value("${currency.api.key:}")
     private String currencyApiKey;
-    
-    private final RestTemplate restTemplate = new RestTemplate();
+
+    private final RestTemplate restTemplate;
+
+    public CurrencyService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
     
     /**
      * Lấy tỷ giá USD to VND từ external API
@@ -49,7 +55,7 @@ public class CurrencyService {
         }
         
         // Fallback rate nếu API không hoạt động
-        return 27469.67;
+        return FALLBACK_USD_VND_RATE;
     }
     
     /**
