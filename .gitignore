@@ -1,6 +1,9 @@
 b # MindMeter .gitignore
 # Created: 2025-01-19
 
+# Local git helpers (do not commit)
+.git-commit-msg.txt
+
 # ========================================
 # 1. BACKEND (Spring Boot)
 # ========================================
