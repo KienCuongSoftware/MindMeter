@@ -1,12 +1,7 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import {
-  FaArrowLeft,
-  FaArrowRight,
-  FaCheck,
-  FaExclamationTriangle,
-} from "react-icons/fa";
+import { FaExclamationTriangle } from "react-icons/fa";
 import { isAnonymousUser, getCurrentUser } from "../services/anonymousService";
 import AnonymousBanner from "../components/AnonymousBanner";
 import UpgradeAnonymousModal from "../components/UpgradeAnonymousModal";
@@ -16,10 +11,7 @@ import {
 } from "../services/anonymousService";
 import { authFetch } from "../authFetch";
 import NotificationModal from "../components/NotificationModal";
-import {
-  getCurrentToken,
-  isUsingAnonymousAccount,
-} from "../services/anonymousService";
+import { getCurrentToken } from "../services/anonymousService";
 import { ThemeContext } from "../App";
 
 const testTitleKeys = {
@@ -136,6 +128,7 @@ const StudentTestPage = () => {
   // Effect để fetch questions khi component mount hoặc testType/ngôn ngữ thay đổi
   useEffect(() => {
     fetchQuestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, testType, i18n.language]);
 
   // Effect để lắng nghe sự thay đổi ngôn ngữ từ Header
@@ -150,6 +143,7 @@ const StudentTestPage = () => {
     return () => {
       delete window.onLanguageChange;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -212,16 +206,6 @@ const StudentTestPage = () => {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    // Xóa dữ liệu anonymous nếu có
-    if (isUsingAnonymousAccount()) {
-      localStorage.removeItem("anonymousUser");
-      localStorage.removeItem("anonymousToken");
-    }
-    navigate("/home");
   };
 
   const handleBackToHome = () => {

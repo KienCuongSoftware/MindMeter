@@ -16,7 +16,6 @@ import {
   FaChartBar,
   FaChartPie,
   FaUser,
-  FaArrowLeft,
   FaBrain,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -27,7 +26,6 @@ import ErrorBoundary from "../components/ErrorBoundary";
 import { authFetch } from "../authFetch";
 import DashboardHeader from "../components/DashboardHeader";
 import FooterSection from "../components/FooterSection";
-import { jwtDecode } from "jwt-decode";
 import { useTheme } from "../hooks/useTheme";
 
 const COLORS = ["#34d399", "#fbbf24", "#60a5fa", "#f87171"];
@@ -193,7 +191,7 @@ const AdminStatisticsPage = ({ handleLogout: propHandleLogout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [openTestDetail, setOpenTestDetail] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
@@ -224,7 +222,6 @@ const AdminStatisticsPage = ({ handleLogout: propHandleLogout }) => {
     document.title = t("systemStatisticsTitle") + " | MindMeter";
     const fetchStats = async () => {
       try {
-        const token = localStorage.getItem("token");
         const res = await authFetch("/api/admin/statistics");
         if (!res.ok) throw new Error(t("loadingStatistics"));
         const data = await res.json();

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 import { useTranslation } from "react-i18next";
 import {
-  FaUserCircle,
   FaArrowLeft,
   FaBrain,
   FaExclamationTriangle,
@@ -114,6 +112,7 @@ export default function AdminProfilePage() {
 
     // Fetch profile ngay khi component mount
     fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t]);
 
   useEffect(() => {

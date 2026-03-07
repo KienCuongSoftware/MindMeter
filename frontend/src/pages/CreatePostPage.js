@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTheme as useCustomTheme } from "../hooks/useTheme";
 import { jwtDecode } from "jwt-decode";
 import BlogForm from "../components/blog/BlogForm";

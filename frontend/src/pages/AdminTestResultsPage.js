@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  FaSearch,
   FaTrash,
   FaEye,
   FaFileExcel,
@@ -238,7 +237,6 @@ export default function AdminTestResultsPage() {
       setLoading(true);
       setError("");
       try {
-        const token = localStorage.getItem("token");
         const res = await authFetch("/api/admin/test-results");
         if (!res.ok) throw new Error(t("loadTestListError"));
         const data = await res.json();
@@ -289,7 +287,6 @@ export default function AdminTestResultsPage() {
     if (!window.confirm(t("confirmDeleteTest"))) return;
     setDeletingId(id);
     try {
-      const token = localStorage.getItem("token");
       const res = await authFetch(`/api/admin/test-results/${id}`, {
         method: "DELETE",
       });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
@@ -19,21 +19,6 @@ const severityOptions = [
   { value: "MODERATE", labelKey: "moderate" },
   { value: "SEVERE", labelKey: "severe" },
 ];
-
-const getSeverityColor = (severityLevel) => {
-  switch (severityLevel) {
-    case "SEVERE":
-      return "bg-red-100 text-red-800";
-    case "MODERATE":
-      return "bg-yellow-100 text-yellow-800";
-    case "MILD":
-      return "bg-blue-100 text-blue-800";
-    case "MINIMAL":
-      return "bg-green-100 text-green-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
 
 const getSeverityLabel = (severityLevel, t) => {
   switch (severityLevel) {
@@ -154,7 +139,6 @@ export default function ExpertStudentsPage({ handleLogout: propHandleLogout }) {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const token = localStorage.getItem("token");
         const res = await authFetch("/api/expert/test-results");
         if (!res.ok) throw new Error(t("fetchStudentError"));
         const data = await res.json();
@@ -325,7 +309,7 @@ export default function ExpertStudentsPage({ handleLogout: propHandleLogout }) {
     );
   };
 
-  const [user, setUser] = useState(() => {
+  const [user] = useState(() => {
     let userObj = {
       firstName: "",
       lastName: "",

@@ -38,6 +38,7 @@ export default function HeroSection({ user, onLogout }) {
       setCurrent((prev) => (prev + 1) % images.length);
     }, 7000);
     return () => clearTimeout(timeoutRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current]);
 
   // Handle swipe

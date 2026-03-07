@@ -9,7 +9,6 @@ import { handleLogout } from "../utils/logoutUtils";
 import {
   getCurrentUser,
   getCurrentToken,
-  clearAnonymousData,
 } from "../services/anonymousService";
 import { jwtDecode } from "jwt-decode";
 

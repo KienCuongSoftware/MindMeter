@@ -53,6 +53,7 @@ const ExpertScheduleManager = ({ theme = "dark" }) => {
   useEffect(() => {
     fetchSchedules();
     fetchBreaks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchSchedules = async () => {

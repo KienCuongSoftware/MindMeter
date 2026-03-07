@@ -45,6 +45,7 @@ const AppointmentList = ({
     if (!propsAppointments) {
       fetchAppointments();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userRole, propsAppointments]);
 
   // Force re-render when language changes

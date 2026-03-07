@@ -10,7 +10,6 @@ import DashboardHeader from "../components/DashboardHeader";
 import FooterSection from "../components/FooterSection";
 import DualLanguageQuestionModal from "../components/DualLanguageQuestionModal";
 import { FaBrain } from "react-icons/fa";
-import { jwtDecode } from "jwt-decode";
 
 export default function QuestionManagementPage({
   handleLogout: propHandleLogout,
@@ -46,7 +45,7 @@ export default function QuestionManagementPage({
     ],
   });
   const [isEdit, setIsEdit] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [alert, setAlert] = useState({ message: "", type: "" });
   const [currentPage, setCurrentPage] = useState(0);
@@ -94,6 +93,7 @@ export default function QuestionManagementPage({
     );
   };
 
+  // eslint-disable-next-line no-unused-vars
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -128,7 +128,6 @@ export default function QuestionManagementPage({
     setLoading(true);
     setError("");
     try {
-      const token = localStorage.getItem("token");
       const res = await authFetch("/api/admin/questions");
       if (!res.ok) throw new Error(t("errorFetchQuestions"));
       const data = await res.json();
@@ -158,7 +157,6 @@ export default function QuestionManagementPage({
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const token = localStorage.getItem("token");
         const res = await authFetch("/api/admin/questions/categories");
         if (!res.ok) throw new Error(t("errorFetchCategories"));
         const data = await res.json();
@@ -174,10 +172,12 @@ export default function QuestionManagementPage({
       }
     };
     fetchCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     fetchQuestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -189,6 +189,7 @@ export default function QuestionManagementPage({
 
   useEffect(() => {
     document.title = t("questionManagement") + " | MindMeter";
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t]);
 
   // Hàm loại bỏ dấu tiếng Việt
@@ -347,7 +348,8 @@ export default function QuestionManagementPage({
     }
   };
 
-  // Bật/tắt trạng thái
+  // Bật/tắt trạng thái (reserved for future use)
+  // eslint-disable-next-line no-unused-vars
   const handleToggle = async (id) => {
     setSaving(true);
     setAlert({ message: "", type: "" });

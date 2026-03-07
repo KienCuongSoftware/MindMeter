@@ -78,7 +78,8 @@ const PayPalPaymentPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [plan, t, navigate]); // Added navigate to dependencies
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plan, t, navigate]);
 
   const executePayment = useCallback(
     async (paymentId, payerId) => {
@@ -180,7 +181,8 @@ const PayPalPaymentPage = () => {
       logger.debug("Creating new PayPal payment...");
       createPayment();
     }
-  }, [user, navigate, createPayment, executePayment, hasExecutedPayment]); // Added hasExecutedPayment to dependencies
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, navigate, createPayment, executePayment, hasExecutedPayment]);
 
   if (success) {
     return (

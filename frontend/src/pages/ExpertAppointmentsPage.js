@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   FaBrain,
-  FaPlus,
   FaCalendarAlt,
   FaClock,
   FaUser,
@@ -18,7 +17,6 @@ import { useTheme } from "../hooks/useTheme";
 
 export default function ExpertAppointmentsPage({ handleLogout }) {
   const navigate = useNavigate();
-  const location = useLocation();
   const { t, i18n } = useTranslation();
 
   const [user, setUser] = useState(null);
@@ -26,13 +24,12 @@ export default function ExpertAppointmentsPage({ handleLogout }) {
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [confirmingAppointmentId, setConfirmingAppointmentId] = useState(null);
   const [cancellingAppointmentId, setCancellingAppointmentId] = useState(null);
 
   // Sử dụng theme từ context
-  const { theme, setTheme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   // Custom confirmation modal state
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -188,6 +185,7 @@ export default function ExpertAppointmentsPage({ handleLogout }) {
     };
 
     initializePage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   // Auto-hide message after 5 seconds with smooth fade out
@@ -224,6 +222,7 @@ export default function ExpertAppointmentsPage({ handleLogout }) {
     } catch (error) {
       setError(t("errorLoadingAppointments"));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const navigateToHome = useCallback(() => {

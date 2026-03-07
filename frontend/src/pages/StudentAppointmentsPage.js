@@ -138,6 +138,7 @@ const StudentAppointmentsPage = ({ handleLogout }) => {
       fetchAvailableExperts();
       fetchMyAppointments();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, user?.role, fetchAvailableExperts, fetchMyAppointments]);
 
   const closeBookingModal = useCallback(() => {

@@ -43,6 +43,7 @@ const NotFoundPage = () => {
     return () => {
       document.title = oldTitle;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t]);
 
   const handleGoHome = () => {

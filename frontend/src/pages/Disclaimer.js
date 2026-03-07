@@ -5,10 +5,6 @@ import DashboardHeader from "../components/DashboardHeader";
 import FooterSection from "../components/FooterSection";
 import {
   FaExclamationTriangle,
-  FaInfoCircle,
-  FaShieldAlt,
-  FaUserMd,
-  FaCheckCircle,
   FaBrain,
 } from "react-icons/fa";
 import { useTheme } from "../hooks/useTheme";
@@ -17,7 +13,6 @@ import { jwtDecode } from "jwt-decode";
 import {
   getCurrentUser,
   getCurrentToken,
-  clearAnonymousData,
 } from "../services/anonymousService";
 
 export default function Disclaimer() {

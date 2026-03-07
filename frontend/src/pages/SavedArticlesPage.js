@@ -106,6 +106,7 @@ const SavedArticlesPage = () => {
       setLoading(false);
       setError(t("blog.savedArticles.loginRequired") || "Please login to view your saved articles");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t]);
 
   // Load bookmarks from API

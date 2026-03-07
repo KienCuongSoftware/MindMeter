@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { useTranslation } from "react-i18next";
-import { FaUserCircle, FaArrowLeft, FaBrain } from "react-icons/fa";
+import { FaArrowLeft, FaBrain } from "react-icons/fa";
 import { authFetch } from "../authFetch";
 import DashboardHeader from "../components/DashboardHeader";
 import FooterSection from "../components/FooterSection";
@@ -117,6 +117,7 @@ export default function StudentProfilePage({ updateUserAvatar }) {
     };
 
     fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t]);
 
   // Kiểm tra token và redirect nếu cần
