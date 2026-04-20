@@ -1,490 +1,182 @@
-# MindMeter - Mental Health Assessment Platform
+# MindMeter
 
 [![React](https://img.shields.io/badge/React-18.2.0-blue.svg)](https://reactjs.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.0-green.svg)](https://spring.io/projects/spring-boot)
 [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.3.3-38B2AC.svg)](https://tailwindcss.com/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-blue.svg)](https://www.mysql.com/)
 
-## Overview
+MindMeter is a full-stack mental health platform. This README is intentionally backend-focused to show system design decisions, trade-offs, and implementation details.
 
-MindMeter is a comprehensive mental health assessment platform designed for students and psychological experts. The application integrates intelligent AI chatbot capabilities, automatic appointment booking, professional psychological assessment tools, and secure payment processing.
+## Architecture
 
-## Core Features
+- **Layered architecture**: `Controller -> Service -> Repository -> MySQL`.
+- **API style**: RESTful endpoints with Spring MVC and DTO-based response models.
+- **Security**: JWT authentication integrated into Spring Security filter chain.
+- **Role model**: RBAC with `ADMIN`, `EXPERT`, `STUDENT`, and `ANONYMOUS`.
+- **Data access**: Spring Data JPA/Hibernate with explicit SQL schema in `database/MindMeter.sql`.
 
-### Psychological Assessment System
+```mermaid
+flowchart LR
+    C[Controller Layer] --> S[Service Layer]
+    S --> R[Repository Layer]
+    R --> DB[(MySQL)]
+    S --> Cache[(In-memory Cache)]
+    Client[Frontend / API Client] --> C
+```
 
-- **DASS-21/DASS-42**: Depression, Anxiety, and Stress Scale assessment
-- **BDI (Beck Depression Inventory)**: Depression assessment using Beck scale
-- **RADS (Reynolds Adolescent Depression Scale)**: Adolescent depression screening
-- **EPDS (Edinburgh Postnatal Depression Scale)**: Postpartum depression assessment
-- **SAS (Self-Rating Anxiety Scale)**: Anxiety level assessment using Zung scale
+## Key Technical Decisions
 
-### AI-Powered Chatbot
+- **JWT-centered API auth**: authentication state is carried in signed tokens and validated by filter-based security middleware.
+- **Token refresh endpoints per role context**: system regenerates JWT with latest user/plan data after profile or plan updates.
+- **Service-level caching for read-heavy modules**: `@Cacheable` on blog lists/categories/tags to reduce repeated DB reads.
+- **Pagination-first design**: `Pageable`/`Page` is used for large collections (blog/forum/admin listing) to control payload size.
+- **Anonymous-to-registered upgrade flow**: supports low-friction onboarding, then upgrades to persistent account with secure password hashing.
+- **Strict role-based authorization**: endpoint access split by role at security config level to limit privilege scope.
 
-- 24/7 OpenAI-powered chatbot with mental health specialization
-- Natural language appointment booking
-- Intelligent test recommendations based on user symptoms
-- Advanced NLP for intent recognition
-- Expert matching and recommendations
+## Authentication Flow
 
-### Appointment Management
+1. Client calls `POST /api/auth/login` with email/password.
+2. Backend authenticates via `AuthenticationManager`.
+3. Backend issues JWT containing role and user claims.
+4. Client sends JWT in `Authorization: Bearer <token>` for protected APIs.
+5. JWT is validated by `JwtAuthenticationFilter` before controller access.
+6. For role-specific refresh endpoints, backend reissues a new JWT from current user data.
 
-- Natural language appointment creation
-- Expert schedule management with conflict detection
-- Time slot optimization and availability checking
-- Complete appointment lifecycle management
-- Structured cancellation handling with reason tracking
+## Database Design
 
-### Multi-Role User System
+### Core entities
 
-- **Admin Dashboard**: User management, system statistics, test results, announcements
-- **Expert Dashboard**: Schedule management, student tracking, appointment handling
-- **Student Dashboard**: Test taking, appointment booking, progress tracking
-- Profile management with avatar support
-- Anonymous user support with limited access
+- `users`: identity, role, status, subscription plan, OAuth provider, and audit timestamps.
+- `appointments`: links student and expert users, stores schedule, status, consultation type, and notes.
+- `depression_test_results`: per-user test outcomes with severity and diagnosis metadata.
+- `depression_test_answers`: normalized answers linked to each test result.
+- `expert_schedules`: availability windows for experts.
 
-### Payment Integration
+### Key relationships
 
-- **PayPal**: Secure payment processing for international transactions
-- **VNPay**: Vietnamese payment gateway integration
-- Subscription tiers: FREE, PLUS, PRO
-- Complete payment history and transaction tracking
-- Secure webhook handling for payment confirmation
+- One `User` (student) -> many `Appointment`.
+- One `User` (expert) -> many `Appointment`.
+- One `User` -> many `DepressionTestResult`.
+- One `DepressionTestResult` -> many `DepressionTestAnswer`.
 
-### Authentication & Security
+```mermaid
+erDiagram
+    USERS ||--o{ APPOINTMENTS : "student_id"
+    USERS ||--o{ APPOINTMENTS : "expert_id"
+    USERS ||--o{ DEPRESSION_TEST_RESULTS : "user_id"
+    DEPRESSION_TEST_RESULTS ||--o{ DEPRESSION_TEST_ANSWERS : "test_result_id"
+```
 
-- JWT-based authentication with secure token management
-- Google OAuth2 social login integration
-- Role-based authorization (Admin, Expert, Student)
-- Email verification with OTP system
-- Password reset with secure OTP delivery
-- CORS configuration and security headers
+## Performance Optimization
 
-### Internationalization
+- **Connection pooling**: HikariCP is configured for stable DB throughput under concurrency.
+- **Read caching**: in-memory cache manager + `@Cacheable` for frequently accessed blog metadata and list queries.
+- **Indexing strategy**: schema includes targeted indexes on scheduling and lookup columns (e.g. `appointment_date`, `student_id`, `expert_id`, `status`).
+- **Bounded payloads**: paginated endpoints reduce transfer size and memory pressure in list APIs.
 
-- Full Vietnamese and English language support
-- Dynamic language switching without page reload
-- Locale-specific date, time, and number formatting
-- Intelligent fallback handling for missing translations
+## API Example
 
-### Testing & Quality Assurance
+### Login
 
-- 37+ comprehensive unit tests
-- Integration testing for authentication and APIs
-- Service layer testing (OtpService, PasswordGeneratorService, CurrencyService)
-- JUnit 5, Mockito, and Spring Boot Test framework
-- Automated testing in CI/CD pipeline
+`POST /api/auth/login`
 
-## Technology Stack
+Request:
 
-### Frontend
+```json
+{
+  "email": "student1@mindmeter.com",
+  "password": "your_password"
+}
+```
 
-- React 18.2.0 with Hooks and Context API
-- Tailwind CSS 3.3.3 for styling
-- React Router DOM 7.6.1 for routing
-- Chart.js 4.5.0 and Recharts 3.0.2 for data visualization
-- i18next 23.7.16 for internationalization
-- Axios 1.9.0 for HTTP requests
-- XLSX 0.18.5 for Excel export
-- React Icons 5.5.0
-- React Quill 2.0.0 for rich text editing
+Response (simplified):
 
-### Backend
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "email": "student1@mindmeter.com",
+  "role": "STUDENT",
+  "user": {
+    "id": 1,
+    "plan": "FREE"
+  }
+}
+```
 
-- Spring Boot 3.5.0
-- Java 17 LTS
-- Spring Security for authentication and authorization
-- Spring Data JPA with Hibernate ORM
-- MySQL 8.0 with HikariCP connection pooling
-- JWT for token-based authentication
-- Lombok for code reduction
-- Spring Mail for email services
-- Google OAuth2 for social authentication
-- JUnit 5 and Mockito for testing
+## Tech Stack
 
-### DevOps & Tools
-
-- Docker & Docker Compose for containerization
-- Maven for Java dependency management
-- npm for frontend package management
-- Nginx for reverse proxy and static file serving
-- Git for version control
-- VS Code and IntelliJ IDEA for development
-- Postman for API testing
+- **Backend**: Spring Boot, Spring Security, Spring Data JPA, Java 17, MySQL, JWT, Maven.
+- **Frontend**: React, Tailwind CSS, React Router, Axios.
+- **Tooling**: Postman, Git.
 
 ## Project Structure
 
-```
+```text
 MindMeter/
-├── frontend/                   # React 18.2.0 application
-│   ├── src/
-│   │   ├── components/        # 30+ reusable UI components
-│   │   ├── pages/             # 33+ page components
-│   │   ├── services/          # API services
-│   │   ├── locales/           # i18n translations (en/vi)
-│   │   ├── hooks/             # Custom React hooks
-│   │   ├── utils/             # Utility functions
-│   │   └── App.js             # Main application
-│   ├── package.json
-│   └── tailwind.config.js
-├── backend/                    # Spring Boot 3.5.0 application
+├── backend/
 │   ├── src/main/java/com/shop/backend/
-│   │   ├── controller/        # 16+ REST API controllers
-│   │   ├── service/           # 20+ business logic services
-│   │   ├── repository/        # Data access layer
-│   │   ├── entity/            # JPA entities
-│   │   ├── dto/               # Data transfer objects
-│   │   ├── security/          # Security configuration
-│   │   └── config/            # Application configuration
-│   ├── src/test/java/         # Unit and integration tests
-│   ├── pom.xml
-│   └── uploads/               # File uploads (avatars)
-├── database/                   # Database scripts
-│   └── MindMeter.sql          # Optimized MySQL schema
-├── SECURITY.md                 # Security guidelines
-├── CONTRIBUTING.md             # Contribution guidelines
-├── LICENSE                     # Apache License 2.0
-└── README.md                   # This file
+│   │   ├── controller/
+│   │   ├── service/
+│   │   ├── repository/
+│   │   ├── model/
+│   │   ├── security/
+│   │   └── config/
+│   └── src/test/java/
+├── frontend/
+├── database/
+│   └── MindMeter.sql
+└── README.md
 ```
 
-## Installation and Setup
+## How To Run
 
-### System Requirements
+### Prerequisites
 
-- Java 17 or higher
-- Node.js 18 or higher
-- MySQL 8.0 or higher
-- Maven 3.8 or higher
+- Java 17+
+- Node.js 18+
+- MySQL 8+
+- Maven 3.8+
 
-### Backend Setup
+### Backend
 
 ```bash
-# Navigate to backend directory
 cd backend
-
-# Copy application properties template
 cp src/main/resources/application.properties.example src/main/resources/application.properties
-
-# Edit application.properties with your database credentials and API keys
-# Configure: MySQL, JWT, Email (Gmail), OAuth2, PayPal, VNPay, OpenAI
-
-# Build and run
 mvn clean install
 mvn spring-boot:run
 ```
 
-Backend will start on `http://localhost:8080`
+Backend runs at `http://localhost:8080`.
 
-### Frontend Setup
+### Frontend
 
 ```bash
-# Navigate to frontend directory
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start development server
 npm start
 ```
 
-Frontend will start on `http://localhost:3000`
+Frontend runs at `http://localhost:3000`.
 
-### Docker Setup (Recommended)
+### Database
 
-For easier deployment and consistent environments, you can use Docker Compose:
-
-```bash
-# Copy environment file
-cp docker-compose.env.example .env
-
-# Edit .env with your configuration
-# Database credentials, JWT secret, API keys, etc.
-
-# Start all services (development)
-docker-compose up -d
-
-# Or use helper scripts
-# Linux/Mac:
-./docker-start.sh
-
-# Windows PowerShell:
-./docker-start.ps1
+```sql
+CREATE DATABASE mindmeter;
 ```
 
-Access the application:
-
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8080
-- MySQL: localhost:3306
-
-For production deployment, see [DOCKER.md](DOCKER.md) for detailed instructions.
-
-### Database Setup
+Then import:
 
 ```bash
-# Create MySQL database
-CREATE DATABASE mindmeter;
-
-# Option 1: Let Spring Boot auto-create tables (development)
-# Set in application.properties: spring.jpa.hibernate.ddl-auto=create
-
-# Option 2: Use optimized schema with indexes (production)
 mysql -u root -p mindmeter < database/MindMeter.sql
 ```
 
-## Configuration
-
-### Backend Configuration (application.properties)
-
-```properties
-# Database
-spring.datasource.url=jdbc:mysql://localhost:3306/mindmeter
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-
-# HikariCP Connection Pool
-spring.datasource.hikari.maximum-pool-size=20
-spring.datasource.hikari.minimum-idle=5
-spring.datasource.hikari.connection-timeout=30000
-
-# JWT
-jwt.secret=your_256_bit_secret_key
-jwt.expiration=86400000
-
-# Email (Gmail SMTP)
-spring.mail.host=smtp.gmail.com
-spring.mail.port=587
-spring.mail.username=your_email@gmail.com
-spring.mail.password=your_app_password
-
-# Google OAuth2
-spring.security.oauth2.client.registration.google.client-id=your_client_id
-spring.security.oauth2.client.registration.google.client-secret=your_client_secret
-
-# PayPal
-paypal.client.id=your_paypal_client_id
-paypal.client.secret=your_paypal_client_secret
-paypal.mode=sandbox
-
-# VNPay
-vnpay.tmnCode=your_vnpay_terminal_code
-vnpay.hashSecret=your_vnpay_hash_secret
-vnpay.url=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-vnpay.returnUrl=http://localhost:3000/payment/vnpay/return
-
-# OpenAI API
-openai.api.key=sk-proj-your_openai_api_key
-```
-
-### Frontend Configuration (.env)
-
-```bash
-REACT_APP_API_URL=http://localhost:8080
-REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id
-```
-
-## API Endpoints
-
-### Authentication & User Management
-
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/refresh` - Token refresh
-- `GET /api/auth/profile` - Get user profile
-- `POST /api/auth/forgot-password/request-otp` - Request password reset OTP
-- `POST /api/auth/forgot-password/verify-otp` - Verify OTP and reset password
-
-### Psychological Tests
-
-- `GET /api/depression-tests` - Get available tests
-- `POST /api/depression-tests/submit` - Submit test responses
-- `GET /api/depression-tests/history` - Get test history
-- `GET /api/depression-tests/results/{id}` - Get specific test result
-- `GET /api/depression-tests/questions` - Get test questions
-
-### Appointments
-
-- `GET /api/appointments` - Get user appointments
-- `POST /api/appointments` - Create new appointment
-- `PUT /api/appointments/{id}` - Update appointment
-- `DELETE /api/appointments/{id}` - Cancel appointment
-- `GET /api/expert-schedules` - Get expert availability
-
-### AI Chatbot
-
-- `POST /api/chatbot/message` - Send message to chatbot
-- `POST /api/auto-booking` - Create appointment through AI
-- `GET /api/chatbot/history` - Get chat history
-
-### Payments
-
-- `POST /api/payment/paypal/create` - Create PayPal payment
-- `POST /api/payment/paypal/capture` - Capture PayPal payment
-- `POST /api/payment/vnpay/create` - Create VNPay payment
-- `GET /api/payment/vnpay/return` - VNPay payment return callback
-- `GET /api/payment/history` - Get payment history
-
-### Admin Management
-
-- `GET /api/admin/users` - Get all users (Admin only)
-- `GET /api/admin/statistics` - Get system statistics (Admin only)
-- `GET /api/admin/test-results` - Get all test results (Admin only)
-- `POST /api/admin/announcements` - Create announcements (Admin only)
-
 ## Testing
 
-### Backend Tests
-
 ```bash
 cd backend
-
-# Run all tests
 mvn test
-
-# Run specific test class
-mvn test -Dtest=OtpServiceTest
-
-# Run tests with coverage report
-mvn test jacoco:report
 ```
-
-### Frontend Tests
-
-```bash
-cd frontend
-
-# Run tests in watch mode
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-```
-
-## Security Features
-
-- JWT token-based authentication with secure secret keys
-- Role-based access control (RBAC) for Admin, Expert, Student
-- Input validation and sanitization on all endpoints
-- SQL injection protection through JPA parameterized queries
-- CORS configuration with allowed origins
-- OAuth2 integration for Google social login
-- Password hashing with BCrypt
-- OTP-based password reset with expiration
-- Email verification for new accounts
-- Secure file upload for avatars
-- CSRF protection
-- Rate limiting on authentication endpoints
-
-## Deployment
-
-### Production Build
-
-```bash
-# Backend
-cd backend
-mvn clean package -Pprod
-
-# Frontend
-cd frontend
-npm run build
-```
-
-### Environment Configuration
-
-For production deployment, configure:
-
-- Database connection with production credentials
-- JWT secret with strong 256-bit key
-- Email server with production SMTP
-- OAuth2 with production credentials
-- PayPal/VNPay with production API keys
-- OpenAI with production API key
-- CORS with production frontend URL
-- HTTPS/SSL certificates
-
-### HikariCP Configuration
-
-Development:
-
-```properties
-spring.datasource.hikari.maximum-pool-size=10
-spring.datasource.hikari.minimum-idle=2
-```
-
-Production:
-
-```properties
-spring.datasource.hikari.maximum-pool-size=50
-spring.datasource.hikari.minimum-idle=10
-spring.datasource.hikari.connection-timeout=60000
-```
-
-## Performance Optimizations
-
-- HikariCP connection pooling for database access
-- 47+ MySQL indexes for query optimization
-- React lazy loading for code splitting
-- Image optimization and lazy loading
-- Caching strategies for API responses
-- Database query optimization with JPA
-- WebSocket for real-time notifications
-- Environment-specific configurations
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Commit your changes: `git commit -m 'Add your feature'`
-4. Push to the branch: `git push origin feature/your-feature`
-5. Open a Pull Request
-
-### Coding Standards
-
-- Java: Follow Spring Boot conventions and checkstyle rules
-- JavaScript: Use ESLint and Prettier for code formatting
-- Git: Use conventional commit messages (feat, fix, docs, refactor, test)
-- Testing: Write unit tests for new features
 
 ## License
 
-This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
-
-### License Summary
-
-- Commercial use: Allowed
-- Modification: Allowed
-- Distribution: Allowed
-- Patent use: Granted
-- Private use: Allowed
-- Liability: Limited
-- Warranty: None
-
-## Support
-
-- Documentation: See inline code documentation and wiki
-- Issues: Report bugs via [GitHub Issues](https://github.com/KienCuong2004/MindMeter/issues)
-- Security: Review [SECURITY.md](SECURITY.md) for security policies
-
-## Key Highlights
-
-- High-performance HikariCP connection pooling
-- Comprehensive psychological assessment tools
-- AI-powered chatbot with OpenAI integration
-- Dual payment gateway support (PayPal + VNPay)
-- Full internationalization (English + Vietnamese)
-- Production-ready with monitoring and security
-- Role-based access control system
-- Real-time WebSocket notifications
-- Responsive modern UI with dark mode
-- Extensive test coverage (37+ unit tests)
-
----
-
-**MindMeter** - Mental health assessment platform built with React, Spring Boot, and modern web technologies.
-
-**Version**: 1.0.0  
-**Last Updated**: 2025-01-18
+This project is licensed under the Apache License 2.0. See `LICENSE`.
