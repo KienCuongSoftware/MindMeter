@@ -345,7 +345,7 @@ docs/build/
 docs/_build/
 
 # ========================================
-# 10. DEPLOYMENT & CI/CD
+# 10. DEPLOYMENT
 # ========================================
 
 # Deployment files
@@ -354,17 +354,6 @@ deployment/
 *.war
 *.ear
 *.jar
-
-# CI/CD
-.github/workflows/local/
-.circleci/
-.travis.yml
-.gitlab-ci.yml
-
-# Docker
-Dockerfile.local
-docker-compose.override.yml
-.dockerignore
 
 # ========================================
 # 11. BACKUP & ARCHIVE

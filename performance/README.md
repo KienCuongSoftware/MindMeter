@@ -75,12 +75,3 @@ Monitor these metrics during tests:
 - Request rate (RPS)
 - CPU and memory usage on server
 
-## CI/CD Integration
-
-Add performance tests to your CI/CD pipeline:
-
-```yaml
-- name: Run Performance Tests
-  run: |
-    k6 run performance/k6-load-test.js
-```
