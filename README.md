@@ -33,6 +33,18 @@ flowchart LR
 - **Anonymous-to-registered upgrade flow**: supports low-friction onboarding, then upgrades to persistent account with secure password hashing.
 - **Strict role-based authorization**: endpoint access split by role at security config level to limit privilege scope.
 
+## Trade-offs
+
+- **In-memory cache instead of Redis**
+  - **Pros**: simpler setup and lower operational overhead for local/single-node deployment.
+  - **Cons**: cache is not shared across instances and has no built-in distributed invalidation.
+- **JWT re-issue endpoints without refresh-token rotation store**
+  - **Pros**: implementation is straightforward and easy to operate.
+  - **Cons**: less control over long-lived session revocation compared with rotating refresh tokens.
+- **Layered monolith instead of microservices**
+  - **Pros**: faster delivery, easier debugging, and lower deployment complexity.
+  - **Cons**: scaling and team ownership boundaries are less flexible at larger system size.
+
 ## Authentication Flow
 
 1. Client calls `POST /api/auth/login` with email/password.
@@ -41,6 +53,14 @@ flowchart LR
 4. Client sends JWT in `Authorization: Bearer <token>` for protected APIs.
 5. JWT is validated by `JwtAuthenticationFilter` before controller access.
 6. For role-specific refresh endpoints, backend reissues a new JWT from current user data.
+
+## Security Considerations
+
+- **Password hashing**: `PasswordEncoder` is configured with `BCryptPasswordEncoder`.
+- **JWT expiration**: token lifetime is configurable via `jwt.expiration` (example default: 24 hours).
+- **Authorization**: endpoint-level RBAC is enforced in Spring Security config.
+- **CORS**: allowed origins are explicitly configured from frontend/domain settings (not wildcard).
+- **CSRF**: disabled for API-first usage with token-based authentication.
 
 ## Database Design
 
@@ -70,9 +90,33 @@ erDiagram
 ## Performance Optimization
 
 - **Connection pooling**: HikariCP is configured for stable DB throughput under concurrency.
-- **Read caching**: in-memory cache manager + `@Cacheable` for frequently accessed blog metadata and list queries.
 - **Indexing strategy**: schema includes targeted indexes on scheduling and lookup columns (e.g. `appointment_date`, `student_id`, `expert_id`, `status`).
 - **Bounded payloads**: paginated endpoints reduce transfer size and memory pressure in list APIs.
+
+## Caching Strategy
+
+- **Cache layer**: Spring Cache with in-memory `ConcurrentMapCacheManager`.
+- **Cached data**:
+  - Blog post listing pages.
+  - Blog categories and tags.
+- **Cache keys**:
+  - Blog list: based on `pageNumber_pageSize`.
+  - Blog detail/public view: includes post id and caller context (user or anonymous).
+  - Categories and tags: static key (`all`).
+- **Invalidation**:
+  - Blog write operations (create/update/delete) evict `blogPosts` cache entries via `@CacheEvict(allEntries = true)`.
+  - Categories/tags are currently read-cached and can be extended with explicit eviction when taxonomy writes are introduced.
+
+## Concurrency Handling
+
+- **Current handling**:
+  - Appointment creation validates slot availability before persisting.
+  - Appointment state transitions (`PENDING -> CONFIRMED/CANCELLED`) are checked in service-layer transactional methods.
+  - Foreign-key constraints enforce referential integrity (`student_id`, `expert_id`).
+- **Potential improvements**:
+  - Add optimistic locking (`@Version`) on appointment/schedule records.
+  - Add stronger database-level uniqueness policy for conflicting time slots.
+  - Introduce idempotency keys for booking requests.
 
 ## API Example
 
@@ -102,6 +146,42 @@ Response (simplified):
   }
 }
 ```
+
+### Create Appointment
+
+`POST /api/appointments`
+
+Request:
+
+```json
+{
+  "expertId": 5,
+  "appointmentDate": "2026-04-20T10:00:00",
+  "durationMinutes": 60,
+  "consultationType": "ONLINE",
+  "notes": "Need consultation about stress management"
+}
+```
+
+Response (simplified):
+
+```json
+{
+  "id": 128,
+  "status": "PENDING",
+  "appointmentDate": "2026-04-20T10:00:00",
+  "expertId": 5,
+  "studentId": 21
+}
+```
+
+## Future Improvements
+
+- Replace in-memory cache with Redis for shared cache across multiple backend instances.
+- Introduce refresh-token rotation with server-side token family tracking.
+- Add message queue for asynchronous notifications and email delivery.
+- Improve search capabilities with full-text indexing and ranking.
+- Add distributed lock or optimistic lock strategy for high-contention booking windows.
 
 ## Tech Stack
 
