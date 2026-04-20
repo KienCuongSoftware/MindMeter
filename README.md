@@ -54,6 +54,18 @@ flowchart LR
 5. JWT is validated by `JwtAuthenticationFilter` before controller access.
 6. For role-specific refresh endpoints, backend reissues a new JWT from current user data.
 
+## Request Lifecycle (Example: Create Appointment)
+
+1. Client sends `POST /api/appointments` with booking payload.
+2. `JwtAuthenticationFilter` validates JWT and sets `SecurityContext`.
+3. `AppointmentController` receives request and maps `AppointmentRequest` DTO.
+4. `AppointmentService#createAppointment()` runs inside a transactional boundary:
+   - validates user role and slot availability.
+   - checks business rules before state transition.
+5. Repository layer persists appointment via Spring Data JPA.
+6. Transaction commits and side effects (history/audit + notifications) are triggered.
+7. API response is returned to client.
+
 ## Security Considerations
 
 - **Password hashing**: `PasswordEncoder` is configured with `BCryptPasswordEncoder`.
@@ -61,6 +73,7 @@ flowchart LR
 - **Authorization**: endpoint-level RBAC is enforced in Spring Security config.
 - **CORS**: allowed origins are explicitly configured from frontend/domain settings (not wildcard).
 - **CSRF**: disabled for API-first usage with token-based authentication.
+- **Limitation**: stateless JWT cannot be immediately revoked without blacklist/session tracking or short expiration windows.
 
 ## Database Design
 
@@ -106,6 +119,8 @@ erDiagram
 - **Invalidation**:
   - Blog write operations (create/update/delete) evict `blogPosts` cache entries via `@CacheEvict(allEntries = true)`.
   - Categories/tags are currently read-cached and can be extended with explicit eviction when taxonomy writes are introduced.
+- **Limitation**:
+  - stale cache reads can still occur briefly around write/eviction timing windows.
 
 ## Concurrency Handling
 
@@ -113,9 +128,11 @@ erDiagram
   - Appointment creation validates slot availability before persisting.
   - Appointment state transitions (`PENDING -> CONFIRMED/CANCELLED`) are checked in service-layer transactional methods.
   - Foreign-key constraints enforce referential integrity (`student_id`, `expert_id`).
+- **Current limitation**:
+  - race conditions may still occur when multiple users book the same slot concurrently.
 - **Potential improvements**:
-  - Add optimistic locking (`@Version`) on appointment/schedule records.
-  - Add stronger database-level uniqueness policy for conflicting time slots.
+  - Apply optimistic locking (`@Version`) on appointment/schedule records.
+  - Enforce unique constraint for critical booking dimensions (for example `expert_id + appointment_date`).
   - Introduce idempotency keys for booking requests.
 
 ## API Example
@@ -185,16 +202,26 @@ Response (simplified):
 
 ## Tech Stack
 
-- **Backend**: Spring Boot, Spring Security, Spring Data JPA, Java 17, MySQL, JWT, Maven.
-- **Frontend**: React, Tailwind CSS, React Router, Axios.
-- **Tooling**: Postman, Git.
+- **Backend**:
+  - Spring Boot (REST API, dependency injection, application lifecycle).
+  - Spring Security (authentication and authorization with filter chain).
+  - Spring Data JPA (ORM and repository abstraction).
+  - Java 17 + Maven (runtime baseline and build tooling).
+- **Database**:
+  - MySQL (relational schema, constraints, and indexed queries).
+- **Caching**:
+  - Spring Cache with in-memory cache manager for read-heavy endpoints.
+- **Frontend**:
+  - React, Tailwind CSS, React Router, Axios.
+- **Tooling**:
+  - Postman, Git.
 
 ## Project Structure
 
 ```text
 MindMeter/
 ├── backend/
-│   ├── src/main/java/com/shop/backend/
+│   ├── src/main/java/com/shop/backend/   # current package namespace in codebase
 │   │   ├── controller/
 │   │   ├── service/
 │   │   ├── repository/
